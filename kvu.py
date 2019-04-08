@@ -40,8 +40,6 @@ def compare_files(filename1, filename2, new_filename):
         i1 = i1+1
         if i1 == 1:
             continue
-        if i1 == 12:        #todo
-            break
 
         bill_num = row1[1].value
         name = row1[4].value
@@ -117,11 +115,11 @@ def main(argv=None):
         elif o in ("-o", "--old"):
             print "old registry:" + a
             in_old_filename = a
-            out_old_filename = "Отличия_старой_формы_реестра.xlsx"
+            out_old_filename = "diff_old_registry.xlsx"
         elif o in ("-n", "--new"):
             print "new registry:" + a
             in_new_filename = a
-            out_new_filename = "Отличия_новой_формы_реестра.xlsx"
+            out_new_filename = "diff_new_registry.xlsx"
     
     # Анализируем аргументы
     #for arg in args:
