@@ -2,11 +2,13 @@
 
 import sys
 import getopt
+import os
 from openpyxl import Workbook
 from openpyxl import load_workbook
 from openpyxl.styles import Font, Color, Fill
 from openpyxl.styles import colors
 
+verbose = 0
 sheet_name = u"Таблица_ЗЛ"
 
 # color for mark different records
@@ -34,8 +36,6 @@ def compare_files(filename1, filename2, new_filename):
 
     i1 = 1
     for row1 in ws1.rows:
-        i1 = i1+1
-
         bill_num = row1[1].value
         name = row1[4].value
         typ = row1[5].value
@@ -44,6 +44,10 @@ def compare_files(filename1, filename2, new_filename):
         paddr = row1[8].value
         ao = row1[9].value
         ag = row1[10].value
+
+	if bill_num is None and name is None and typ is None:
+            print "end of input file is detected at row #%d" % (i1)
+	    break
     
         is_found = False
         is_changed = False
@@ -66,10 +70,12 @@ def compare_files(filename1, filename2, new_filename):
                     is_changed = (name!=row2[4].value or uaddr!=row2[7].value or paddr!=row2[8].value or ao!=row2[9].value or ag!=row2[10].value)
                 if is_found:
                     break
+        # end of for row2 in ws2.rows:
 
         if is_found:
             if is_changed:
-                print 'row #%d(%d): *' % (i1,i2)
+		if verbose:
+                    print 'row #%d(%d): *' % (i1,i2)
                 row1[1].font = rft
                 row2[1].font = rft
                 cols = found_changed_cols(row1, row2)
@@ -77,11 +83,16 @@ def compare_files(filename1, filename2, new_filename):
                     row1[c].font = rft
                     row2[c].font = rft
             else:
-                print 'row #%d(%d): v' % (i1,i2)
+		if verbose:
+                    print 'row #%d(%d): v' % (i1,i2)
         else:
-            print 'row #%d: -' % (i1)
+	    if verbose:
+                print 'row #%d: -' % (i1)
             for c in row1:
                 c.font = bft
+
+        i1 = i1+1
+    # end of for row1 in ws1.rows:
 
     wb1.save(new_filename)
 
@@ -91,6 +102,7 @@ def usage(argv):
     print "Usage: " + argv[0] + " --old=old_registry_filename --new=new_registry_filename"
 
 def main(argv=None):
+    global verbose
     in_old_filename = u".\\files\\1.xlsx"
     out_old_filename = u".\\files\\1_diff.xlsx"
     in_new_filename = u".\\files\\2.xlsx"
@@ -100,29 +112,50 @@ def main(argv=None):
         argv = sys.argv
     # Разбираем аргументы командной строки
     try:
-        opts, args = getopt.getopt(argv[1:], "ho:n:", ["help", "old=", "new="])
+        opts, args = getopt.getopt(argv[1:], "ho:n:v", ["help", "old=", "new=", "verbose"])
     except getopt.error, msg:
         print msg
         print "для справки используйте --help"
-        sys.exit(2)
+        sys.exit(1)
     #print >> sys.stderr, opts
 
     # Анализируем опции
-    for o, a in opts:
+    for o, arg in opts:
         if o in ("-h", "--help"):
             usage(argv)
             sys.exit(0)
+        elif o in ("-v", "--verbose"):
+            verbose = verbose + 1
         elif o in ("-o", "--old"):
-            print "old registry:" + a
-            in_old_filename = a
-            out_old_filename = "diff_old.xlsx"
+            print "old registry file: " + arg
+            in_old_filename = arg
+            path=os.path.split(in_old_filename)
+            if path[0]=='' or path[0]=='.':
+	        out_old_filename = "diff_old.xlsx"
+            else:
+	        out_old_filename = path[0] + "\\diff_old.xlsx"
+            print "difference between old and new registry will be saved on: " + out_old_filename
         elif o in ("-n", "--new"):
-            print "new registry:" + a
-            in_new_filename = a
-            out_new_filename = "diff_new.xlsx"
+            print "new registry file: " + arg
+            in_new_filename = arg
+            path=os.path.split(in_new_filename)
+            if path[0]=='' or path[0]=='.':
+	        out_new_filename = "diff_new.xlsx"
+            else:
+	        out_new_filename = path[0] + "\\diff_new.xlsx"
+            print "difference between new and old registry will be saved on: " + out_new_filename
     
-    compare_files(in_old_filename, in_new_filename, out_old_filename)
-    compare_files(in_new_filename, in_old_filename, out_new_filename)
+    try:
+        compare_files(in_old_filename, in_new_filename, out_old_filename)
+        compare_files(in_new_filename, in_old_filename, out_new_filename)
+    except IOError:
+	print "IOError happens"
+        sys.exit(2)
+    except Exception:
+	print "UnknonwError happens"
+	sys.exit(3)
+    else:
+	print "work is successful completed"
 
 if __name__ == "__main__":
     main()
