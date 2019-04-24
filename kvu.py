@@ -145,17 +145,26 @@ def main(argv=None):
 	        out_new_filename = path[0] + "\\diff_new.xlsx"
             print "difference between new and old registry will be saved on: " + out_new_filename
     
+    homepath = os.path.expanduser(os.getenv('USERPROFILE'))
+    result = homepath + "\\kvu.result"
+
     try:
         compare_files(in_old_filename, in_new_filename, out_old_filename)
         compare_files(in_new_filename, in_old_filename, out_new_filename)
-    except IOError:
-	print "IOError happens"
+    except IOError as e:
+	print "IOError happens, see %s" % result
+	with open(result,"w") as f:
+	    f.write(str(e))
         sys.exit(2)
-    except Exception:
-	print "UnknonwError happens"
+    except Exception as e:
+	print "UnknownError happens, see %s" % result
+	with open(result,"w") as f:
+	    f.write(str(e))
 	sys.exit(3)
     else:
 	print "work is successful completed"
+	with open(result,"w") as f:
+	    f.write("Normally completed")
 
 if __name__ == "__main__":
     main()
