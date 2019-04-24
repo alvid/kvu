@@ -3,7 +3,7 @@ Windows installation:
 - C:\tools\python276_bin
 - C:\tools\python276_bin\Scripts
 
-2. Unpack and setup next packages, using command: "$python .\setup.py install"
+2. Unpack and setup next packages, using command: "python .\setup.py install"
 - jdcal
 - et_xmlfile
 - openpyxl
