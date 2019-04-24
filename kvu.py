@@ -7,14 +7,11 @@ from openpyxl import load_workbook
 from openpyxl.styles import Font, Color, Fill
 from openpyxl.styles import colors
 
-in_old_filename = u"//Users/alekseydorofeev/kvu/Форма реестра.xlsx"
-out_old_filename = u"//Users/alekseydorofeev/kvu/Форма реестра_старая.xlsx"
-in_new_filename = u"//Users/alekseydorofeev/kvu/Форма реестра1.xlsx"
-out_new_filename = u"//Users/alekseydorofeev/kvu/Форма реестра1_новая.xlsx"
 sheet_name = u"Таблица_ЗЛ"
-new_sheet_name = u"Таблица_ЗЛ_изменения"
 
+# color for mark different records
 rft = Font(color=colors.RED)
+# color for mark missing records
 bft = Font(color=colors.BLUE)
 
 def found_changed_cols(row1, row2):
@@ -35,11 +32,9 @@ def compare_files(filename1, filename2, new_filename):
     wb2 = load_workbook(filename=filename2)
     ws2 = wb2[sheet_name]
 
-    i1 = 0
+    i1 = 1
     for row1 in ws1.rows:
         i1 = i1+1
-        if i1 == 1:
-            continue
 
         bill_num = row1[1].value
         name = row1[4].value
@@ -96,6 +91,11 @@ def usage(argv):
     print "Usage: " + argv[0] + " --old=old_registry_filename --new=new_registry_filename"
 
 def main(argv=None):
+    in_old_filename = u".\\files\\1.xlsx"
+    out_old_filename = u".\\files\\1_diff.xlsx"
+    in_new_filename = u".\\files\\2.xlsx"
+    out_new_filename = u".\\files\\2_diff.xlsx"
+
     if argv is None:
         argv = sys.argv
     # Разбираем аргументы командной строки
@@ -115,16 +115,12 @@ def main(argv=None):
         elif o in ("-o", "--old"):
             print "old registry:" + a
             in_old_filename = a
-            out_old_filename = "diff_old_registry.xlsx"
+            out_old_filename = "diff_old.xlsx"
         elif o in ("-n", "--new"):
             print "new registry:" + a
             in_new_filename = a
-            out_new_filename = "diff_new_registry.xlsx"
+            out_new_filename = "diff_new.xlsx"
     
-    # Анализируем аргументы
-    #for arg in args:
-    #    print "arg: " + arg
-
     compare_files(in_old_filename, in_new_filename, out_old_filename)
     compare_files(in_new_filename, in_old_filename, out_new_filename)
 
